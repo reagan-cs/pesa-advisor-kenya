@@ -75,9 +75,11 @@ let state = {
 // ── SPLASH ──────────────────────────────────────────
 window.addEventListener('load', () => {
   setTimeout(() => {
-    document.getElementById('splash').classList.add('hide');
-    document.getElementById('app').style.display = 'block';
-  }, 2000);
+    const splash = document.getElementById('splash');
+    const app = document.getElementById('app');
+    if (splash) splash.classList.add('hide');
+    if (app) app.style.display = 'block';
+  }, 1500);
 });
 
 function goTo(id) {
@@ -197,9 +199,11 @@ function proceedToIntake() {
 // ── STEP 2: Validate intake and go to M-Pesa step ───
 function proceedToMpesa() {
   const name    = document.getElementById('intakeName').value.trim();
-  const purpose = document.getElementById('intakePurpose').value;
+  const purposeEl  = document.querySelector('input[name="purpose"]:checked');
   const income  = document.getElementById('intakeIncome').value;
-  const existing = document.getElementById('intakeExisting').value;
+  const existingEl = document.querySelector('input[name="existing"]:checked');
+  const purpose = purposeEl ? purposeEl.value : '';
+  const existing = existingEl ? existingEl.value : '';
 
   // Validate all fields
   let valid = true;
@@ -316,14 +320,14 @@ function generateAdvisorReport(intake) {
   }
 
   if (isExisting) warning = '⚠ You currently have existing loans. Avoid borrowing until you have cleared at least one — multiple loans multiply your CRB risk significantly.';
-  if (isRisky)    warning = (warning ? warning + '\n\n' : '') + `⚠ This loan (KSh ${total.toLocaleString()} repayment) represents ${debtRatio}% of your monthly income. Financial advisors recommend keeping loan repayments below 30% of income. Consider borrowing less or waiting until income increases.`;
+  if (isRisky)    warning = (warning ? warning + '\n\n' : '') + `⚠ This loan (KSh ${total.toLocaleString()} repayment) represents ${debtRatio}% of your monthly income. Financial advisors recommend staying below 30%.`;
 
   const purposeAdvice = {
-    stock:     `Good reason to borrow. Stock loans are productive — the goods you buy should generate profit to repay the loan. Rule: your stock profit margin must exceed ${loanRate}% monthly, otherwise the loan costs more than it earns.`,
+    stock:     `Good reason to borrow. Stock loans are productive — the goods you buy should generate profit to repay the loan. Rule: your stock profit margin must exceed ${loanRate}% monthly.`,
     school:    `Education is a valid investment. However, school fee loans should be short-term. If fees are recurring each term, consider a savings plan (M-Shwari savings) rather than repeated borrowing.`,
-    emergency: `Emergencies justify borrowing. But after this crisis, please build an emergency fund of at least KSh ${Math.round(loanAmount * 0.5).toLocaleString()} in M-Shwari savings so next time you don't need a loan.`,
+    emergency: `Emergencies justify borrowing. But after this crisis, please build an emergency fund of at least KSh ${Math.round(loanAmount * 0.5).toLocaleString()} in M-Shwari savings so next time you don't need to borrow.`,
     rent:      `Borrowing for rent is a warning sign — it means expenses exceed income. After paying this rent, urgently reduce monthly expenses or increase income before the next rent cycle.`,
-    equipment: `Equipment loans are good if the equipment generates income. Calculate: will this equipment earn enough to repay KSh ${daily.toLocaleString()}/day? If yes, proceed. If not, the loan will drain you.`,
+    equipment: `Equipment loans are good if the equipment generates income. Calculate: will this equipment earn enough to repay KSh ${daily.toLocaleString()}/day? If yes, proceed. If not, the loan doesn't make financial sense.`,
     farming:   `Agricultural loans are seasonal. Align your repayment date with your harvest/sale date. Never take a 30-day loan for farming — it will mature before your crop is ready. Use KCB M-Pesa (6 months) instead.`,
     other:     `Ensure this loan is for something that either generates income or is a true necessity. Loans for consumption (food, entertainment) should be avoided — they leave you poorer.`,
   }[purpose] || '';
@@ -385,39 +389,3 @@ document.addEventListener('change', e => {
     state.intake.existing = e.target.value;
   }
 });
-
-// Patch proceedToMpesa to read radio buttons correctly
-const _origMpesa = proceedToMpesa;
-window.proceedToMpesa = function() {
-  const purposeEl  = document.querySelector('input[name="purpose"]:checked');
-  const existingEl = document.querySelector('input[name="existing"]:checked');
-  // Inject values so the original function reads them
-  if (purposeEl)  state.intake.purposeVal  = purposeEl.value;
-  if (existingEl) state.intake.existingVal = existingEl.value;
-
-  const name     = document.getElementById('intakeName').value.trim();
-  const income   = document.getElementById('intakeIncome').value;
-  const purpose  = purposeEl  ? purposeEl.value  : '';
-  const existing = existingEl ? existingEl.value : '';
-
-  let valid = true;
-  if (!name)     { showErr('errName', true);    valid = false; } else { showErr('errName', false); }
-  if (!purpose)  { showErr('errPurpose', true); valid = false; } else { showErr('errPurpose', false); }
-  if (!income)   { showErr('errIncome', true);  valid = false; } else { showErr('errIncome', false); }
-  if (!existing) { showErr('errExisting', true);valid = false; } else { showErr('errExisting', false); }
-  if (!valid) return;
-
-  state.intake = {
-    name, purpose, income, existing,
-    loanAmount: parseInt(document.getElementById('sliderAmount')?.value || 10000),
-    loanRate:   parseFloat(document.getElementById('sliderRate')?.value || 7.5),
-  };
-
-  const plan = PLANS[state.currentPlan];
-  document.getElementById('instrAmount').textContent  = plan.amount;
-  document.getElementById('instrPlan').textContent    = plan.name;
-  document.getElementById('instrName2').textContent   = name;
-
-  showPayStep(3);
-  updateProgress(3);
-};
