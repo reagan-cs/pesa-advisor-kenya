@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0A2E1E">
+<title>Pesa Advisor — Owner Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:#0d1f15;color:#e8f0eb;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+:root{
+  --g:#1D9E75;--g-dark:#0A2E1E;--g-mid:#085041;--g-light:#E1F5EE;--g-accent:#5DCAA5;
+  --amber:#BA7517;--red:#E24B4A;--border:rgba(255,255,255,0.08);
+  --card:rgba(255,255,255,0.04);--card-hover:rgba(255,255,255,0.07);
+  --r:12px;--r-sm:8px;
+}
+
+/* ── LOGIN GATE ──────────────────────────── */
+#loginGate{position:fixed;inset:0;background:#0A2E1E;display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:0}
+.login-card{background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:16px;padding:36px 28px;width:100%;max-width:340px;text-align:center}
+.login-logo{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff;margin-bottom:4px}
+.login-logo span{color:var(--g-accent)}
+.login-sub{font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:28px}
+.login-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,0.4);text-align:left;margin-bottom:8px}
+.login-input{width:100%;background:rgba(255,255,255,0.08);border:1px solid var(--border);border-radius:var(--r-sm);padding:13px 16px;font-size:16px;font-family:'DM Sans',sans-serif;color:#fff;outline:none;letter-spacing:.15em;margin-bottom:14px;transition:border .2s;-webkit-text-security:disc}
+.login-input::placeholder{letter-spacing:0;color:rgba(255,255,255,0.25);font-size:14px}
+.login-input:focus{border-color:var(--g-accent)}
+.login-btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:var(--r-sm);padding:14px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-bottom:12px}
+.login-btn:hover{background:var(--g-mid)}
+.login-err{font-size:13px;color:var(--red);display:none;margin-top:-6px;margin-bottom:8px}
+.login-hint{font-size:11px;color:rgba(255,255,255,0.2)}
+
+/* ── MAIN LAYOUT ─────────────────────────── */
+#dashboard{display:none}
+.topbar{background:rgba(10,46,30,0.95);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff}
+.topbar-logo span{color:var(--g-accent)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-badge{font-size:11px;font-weight:600;background:rgba(93,202,165,0.15);color:var(--g-accent);padding:4px 12px;border-radius:50px;border:1px solid rgba(93,202,165,0.2)}
+.logout-btn{background:none;border:1px solid var(--border);color:rgba(255,255,255,0.5);font-size:12px;padding:5px 12px;border-radius:50px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+
+.main{max-width:800px;margin:0 auto;padding:24px 16px 60px}
+
+/* ── STATS ROW ───────────────────────────── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center}
+.stat-n{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:#fff}
+.stat-l{font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.stat-card.earnings .stat-n{color:var(--g-accent)}
+
+/* ── SECTION TITLES ──────────────────────── */
+.sec-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec-title i{color:var(--g-accent);font-size:20px}
+
+/* ── REPORT GENERATOR ────────────────────── */
+.generator-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:24px}
+.gen-field{margin-bottom:16px}
+.gen-label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,0.4);margin-bottom:8px}
+.gen-input,.gen-select{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:#fff;outline:none;transition:border .2s}
+.gen-input::placeholder{color:rgba(255,255,255,0.25)}
+.gen-input:focus,.gen-select:focus{border-color:var(--g-accent)}
+.gen-select option{background:#1a3326;color:#fff}
+.gen-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gen-btn{width:100%;background:var(--g);color:#fff;border:none;border-radius:var(--r-sm);padding:15px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.gen-btn:hover{background:var(--g-mid);transform:translateY(-1px)}
+.gen-btn:disabled{background:#333;cursor:not-allowed;transform:none}
+
+/* ── REPORT OUTPUT ───────────────────────── */
+.report-output{display:none;margin-top:20px}
+.report-box{background:#0A2E1E;border:1px solid rgba(93,202,165,0.2);border-radius:var(--r);padding:20px;position:relative;margin-bottom:12px;white-space:pre-wrap;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.85);font-family:'DM Sans',sans-serif}
+.report-box.generating{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.copy-report-btn{width:100%;background:rgba(93,202,165,0.15);border:1px solid rgba(93,202,165,0.3);color:var(--g-accent);border-radius:var(--r-sm);padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;margin-bottom:8px}
+.copy-report-btn:hover{background:rgba(93,202,165,0.25)}
+.copy-report-btn.copied{background:var(--g);color:#fff;border-color:var(--g)}
+.whatsapp-send-btn{width:100%;background:#25D366;border:none;color:#fff;border-radius:var(--r-sm);padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s}
+.whatsapp-send-btn:hover{background:#1aad54}
+
+/* ── RISK BADGE ──────────────────────────── */
+.risk-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.risk-pill{font-size:12px;font-weight:600;padding:5px 14px;border-radius:50px;display:flex;align-items:center;gap:5px}
+.risk-low{background:rgba(29,158,117,0.2);color:#5DCAA5;border:1px solid rgba(29,158,117,0.3)}
+.risk-medium{background:rgba(186,117,23,0.2);color:#F0A030;border:1px solid rgba(186,117,23,0.3)}
+.risk-high{background:rgba(226,75,74,0.2);color:#F07070;border:1px solid rgba(226,75,74,0.3)}
+
+/* ── PENDING QUEUE ───────────────────────── */
+.queue-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:24px}
+.queue-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);transition:background .15s;gap:12px}
+.queue-item:last-child{border-bottom:none}
+.queue-item:hover{background:var(--card-hover)}
+.qi-left{flex:1;min-width:0}
+.qi-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px}
+.qi-meta{font-size:12px;color:rgba(255,255,255,0.4)}
+.qi-plan{font-size:11px;font-weight:600;padding:2px 9px;border-radius:50px}
+.qi-plan.basic{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5)}
+.qi-plan.hustler{background:rgba(29,158,117,0.2);color:var(--g-accent)}
+.qi-plan.biashara{background:rgba(55,138,221,0.2);color:#7BBFFF}
+.qi-btn{background:var(--g);color:#fff;border:none;border-radius:50px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s}
+.qi-btn:hover{background:var(--g-mid)}
+.queue-empty{padding:32px;text-align:center;color:rgba(255,255,255,0.3);font-size:14px}
+
+/* ── TIPS FOR OWNER ──────────────────────── */
+.owner-tips{background:rgba(93,202,165,0.06);border:1px solid rgba(93,202,165,0.15);border-radius:var(--r);padding:18px;margin-bottom:24px}
+.owner-tip{display:flex;gap:10px;font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:10px;line-height:1.6}
+.owner-tip:last-child{margin-bottom:0}
+.owner-tip i{color:var(--g-accent);font-size:16px;flex-shrink:0;margin-top:2px}
+
+/* ── LOADING DOTS ────────────────────────── */
+.dots::after{content:'...';animation:dots 1.2s steps(3,end) infinite}
+@keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
+
+/* ── RESPONSIVE ──────────────────────────── */
+@media(max-width:480px){
+  .gen-row{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .stats-row .stat-card:last-child{grid-column:1/-1}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN GATE -->
+<div id="loginGate">
+  <div class="login-card">
+    <div class="login-logo">Pesa<span>Advisor</span></div>
+    <div class="login-sub">Owner Dashboard — Private Access</div>
+    <label class="login-label">Enter your PIN</label>
+    <input type="password" id="pinInput" class="login-input" placeholder="Enter 4-digit PIN" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')checkPin()">
+    <div class="login-err" id="loginErr">Wrong PIN. Try again.</div>
+    <button class="login-btn" onclick="checkPin()">
+      <i class="ti ti-lock-open"></i> Open Dashboard
+    </button>
+    <div class="login-hint">Only you should know this PIN. Default: 1044</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">Pesa<span>Advisor</span> <span style="font-size:12px;color:rgba(255,255,255,0.3);font-weight:400;margin-left:4px">Owner</span></div>
+    <div class="topbar-right">
+      <div class="topbar-badge"><i class="ti ti-shield-check"></i> Secure</div>
+      <button class="logout-btn" onclick="logout()"><i class="ti ti-logout"></i> Lock</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card earnings">
+        <div class="stat-n" id="statEarnings">KSh 0</div>
+        <div class="stat-l">Total earned</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n" id="statCustomers">0</div>
+        <div class="stat-l">Customers</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-n" id="statToday">0</div>
+        <div class="stat-l">Today</div>
+      </div>
+    </div>
+
+    <!-- OWNER TIPS -->
+    <div class="owner-tips">
+      <div class="owner-tip"><i class="ti ti-info-circle"></i><span>When a customer sends you their WhatsApp screenshot, paste their details below and click Generate. The AI writes the full professional advice report for you.</span></div>
+      <div class="owner-tip"><i class="ti ti-clock"></i><span>Try to reply within 5 minutes — customers who get fast replies leave good reviews and refer friends.</span></div>
+      <div class="owner-tip"><i class="ti ti-alert-triangle"></i><span>If the M-Pesa screenshot looks edited or the amount is wrong — do not generate. Ask them to resend clearly.</span></div>
+    </div>
+
+    <!-- REPORT GENERATOR -->
+    <div class="sec-title"><i class="ti ti-sparkles"></i> Generate Customer Report</div>
+    <div class="generator-card">
+
+      <div class="gen-row">
+        <div class="gen-field">
+          <label class="gen-label">Customer Name</label>
+          <input type="text" id="gName" class="gen-input" placeholder="e.g. Wanjiku">
+        </div>
+        <div class="gen-field">
+          <label class="gen-label">Plan Paid</label>
+          <select id="gPlan" class="gen-select">
+            <option value="basic">Basic — KSh 10</option>
+            <option value="hustler" selected>Hustler — KSh 29</option>
+            <option value="biashara">Biashara — KSh 99</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gen-row">
+        <div class="gen-field">
+          <label class="gen-label">Loan Amount (KSh)</label>
+          <input type="number" id="gAmount" class="gen-input" placeholder="e.g. 15000" min="500" max="3000000">
+        </div>
+        <div class="gen-field">
+          <label class="gen-label">Interest Rate (%/month)</label>
+          <input type="number" id="gRate" class="gen-input" placeholder="e.g. 7.5" step="0.5" min="1" max="35">
+        </div>
+      </div>
+
+      <div class="gen-row">
+        <div class="gen-field">
+          <label class="gen-label">Loan Purpose</label>
+          <select id="gPurpose" class="gen-select">
+            <option value="">Select...</option>
+            <option value="stock">Business stock</option>
+            <option value="school">School fees</option>
+            <option value="emergency">Emergency</option>
+            <option value="rent">Rent / Housing</option>
+            <option value="equipment">Equipment / Vifaa</option>
+            <option value="farming">Farming / Kilimo</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label class="gen-label">Monthly Income</label>
+          <select id="gIncome" class="gen-select">
+            <option value="">Select...</option>
+            <option value="under10">Under KSh 10,000</option>
+            <option value="10to30">KSh 10,000 – 30,000</option>
+            <option value="30to50">KSh 30,000 – 50,000</option>
+            <option value="above50">Above KSh 50,000</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gen-field">
+        <label class="gen-label">Existing Loans?</label>
+        <select id="gExisting" class="gen-select">
+          <option value="">Select...</option>
+          <option value="no">No other loans</option>
+          <option value="fuliza">Fuliza only</option>
+          <option value="yes">Yes, has other loans</option>
+        </select>
+      </div>
+
+      <div class="gen-field">
+        <label class="gen-label">Customer's WhatsApp Number (optional — for direct send)</label>
+        <input type="tel" id="gPhone" class="gen-input" placeholder="e.g. 0712345678">
+      </div>
+
+      <button class="gen-btn" id="genBtn" onclick="generateReport()">
+        <i class="ti ti-sparkles"></i> Generate Personalized Report
+      </button>
+
+      <!-- RISK ASSESSMENT (shown before report) -->
+      <div id="riskRow" class="risk-row" style="display:none;margin-top:16px"></div>
+
+      <!-- REPORT OUTPUT -->
+      <div class="report-output" id="reportOutput">
+        <div class="report-box" id="reportBox"></div>
+        <button class="copy-report-btn" id="copyReportBtn" onclick="copyReport()">
+          <i class="ti ti-copy"></i> Copy Report to Clipboard
+        </button>
+        <button class="whatsapp-send-btn" id="waBtn" onclick="sendViaWhatsApp()">
+          <i class="ti ti-brand-whatsapp"></i> Send Directly via WhatsApp
+        </button>
+      </div>
+    </div>
+
+    <!-- CUSTOMER LOG -->
+    <div class="sec-title"><i class="ti ti-history"></i> Customer Log</div>
+    <div class="queue-card">
+      <div id="customerLog">
+        <div class="queue-empty">No customers yet today. Reports you generate will appear here.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── PIN AUTH ─────────────────────────────────────────
+const OWNER_PIN = '1044'; // Change this to your own 4-digit PIN
+let customers = JSON.parse(localStorage.getItem('pa_customers') || '[]');
+let totalEarnings = JSON.parse(localStorage.getItem('pa_earnings') || '0');
+
+function checkPin() {
+  const val = document.getElementById('pinInput').value;
+  if (val === OWNER_PIN) {
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadDashboard();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+    setTimeout(() => document.getElementById('loginErr').style.display = 'none', 3000);
+  }
+}
+
+document.getElementById('pinInput').addEventListener('keyup', e => {
+  if (e.key === 'Enter') checkPin();
+});
+
+function logout() {
+  document.getElementById('loginGate').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pinInput').value = '';
+}
+
+// ── DASHBOARD LOAD ───────────────────────────────────
+function loadDashboard() {
+  const today = customers.filter(c => c.date === todayStr()).length;
+  document.getElementById('statEarnings').textContent = 'KSh ' + totalEarnings.toLocaleString();
+  document.getElementById('statCustomers').textContent = customers.length;
+  document.getElementById('statToday').textContent = today;
+  renderLog();
+}
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function renderLog() {
+  const log = document.getElementById('customerLog');
+  if (!customers.length) {
+    log.innerHTML = '<div class="queue-empty">No customers yet. Reports you generate will appear here.</div>';
+    return;
+  }
+  log.innerHTML = [...customers].reverse().slice(0, 20).map(c => `
+    <div class="queue-item">
+      <div class="qi-left">
+        <div class="qi-name">${c.name}</div>
+        <div class="qi-meta">${c.purpose} · KSh ${parseInt(c.amount).toLocaleString()} · ${c.date}</div>
+      </div>
+      <span class="qi-plan ${c.plan}">${c.plan}</span>
+    </div>
+  `).join('');
+}
+
+// ── REPORT GENERATOR ─────────────────────────────────
+async function generateReport() {
+  const name     = document.getElementById('gName').value.trim();
+  const plan     = document.getElementById('gPlan').value;
+  const amount   = parseInt(document.getElementById('gAmount').value);
+  const rate     = parseFloat(document.getElementById('gRate').value);
+  const purpose  = document.getElementById('gPurpose').value;
+  const income   = document.getElementById('gIncome').value;
+  const existing = document.getElementById('gExisting').value;
+
+  if (!name || !amount || !rate || !purpose || !income || !existing) {
+    alert('Please fill in all fields before generating.');
+    return;
+  }
+
+  // ── CALCULATE FINANCIALS ──
+  const interest  = Math.round(amount * rate / 100);
+  const excise    = Math.round(interest * 0.20);
+  const total     = amount + interest + excise;
+  const daily     = Math.round(total / 30);
+  const weekly    = Math.round(total / 4);
+  const incomeNum = { under10: 8000, '10to30': 20000, '30to50': 40000, above50: 65000 }[income] || 15000;
+  const debtRatio = Math.round((total / incomeNum) * 100);
+
+  // ── RISK LEVEL ──
+  let risk = 'low', riskLabel = '✅ Low Risk', riskClass = 'risk-low';
+  if (debtRatio > 50 || existing === 'yes') { risk = 'high'; riskLabel = '🔴 High Risk'; riskClass = 'risk-high'; }
+  else if (debtRatio > 30 || existing === 'fuliza') { risk = 'medium'; riskLabel = '🟡 Medium Risk'; riskClass = 'risk-medium'; }
+
+  // ── BEST LENDER LOGIC ──
+  let lender, lenderHow;
+  if (amount > 1000000) {
+    lender = 'Equity EazzyLoan'; lenderHow = 'Open an Equity Bank account this week, then apply via Equity Mobile app.';
+  } else if (amount > 50000) {
+    lender = 'KCB M-Pesa'; lenderHow = 'Open M-Pesa → Loans & Savings → KCB M-Pesa Loan.';
+  } else if (purpose === 'farming') {
+    lender = 'KCB M-Pesa (6-month term)'; lenderHow = 'Farming needs longer terms. KCB M-Pesa gives 6 months — aligned to your harvest cycle. Open M-Pesa → Loans & Savings → KCB M-Pesa.';
+  } else {
+    lender = 'M-Shwari'; lenderHow = 'Dial *234# → Loans & Savings → M-Shwari → Apply.';
+  }
+
+  // ── PURPOSE-SPECIFIC ADVICE ──
+  const purposeAdvice = {
+    stock:     `Your loan purpose (business stock) is a productive use of debt — this is the right reason to borrow. The key rule: your stock profit margin must exceed ${rate}% per month, otherwise the loan costs more than it earns. If your stock gives you 20% margin and the loan costs 7.5%, you are profitable. Calculate this before you borrow.`,
+    school:    `School fees are a valid but recurring expense. This loan solves the immediate problem, but I strongly advise you to open an M-Shwari Savings account and save even KSh 500 per week toward next term's fees. Repeated borrowing for school fees keeps you in a debt cycle every term.`,
+    emergency: `Emergencies justify borrowing — you had no choice. However, once this crisis is resolved, your priority should be building an emergency fund. Save KSh ${Math.round(amount * 0.5).toLocaleString()} in M-Shwari Lock Savings (it earns 6.5% per year). Within 3 months you can protect yourself without needing a loan next time.`,
+    rent:      `I must be honest with you: borrowing for rent is a financial warning sign. It means your monthly income is not covering your monthly expenses. After paying this rent, I urge you to either: (1) reduce your rent by finding a cheaper house, or (2) add an income stream. If you borrow for rent every month, the interest will make your situation worse, not better.`,
+    equipment: `Equipment loans are excellent IF the equipment generates income that exceeds the loan cost. Your repayment is KSh ${daily.toLocaleString()}/day. Ask yourself: will this equipment earn at least KSh ${daily.toLocaleString()} more per day than without it? If yes, proceed confidently. If no, reconsider or borrow a smaller amount.`,
+    farming:   `Agricultural loans require careful timing. Your loan matures in ${rate <= 8.64 ? '30 days (M-Shwari) or 6 months (KCB)' : '21–61 days'}. I strongly recommend KCB M-Pesa's 6-month option — it aligns with your harvest cycle and avoids the trap of a 30-day loan maturing before your crop is ready to sell.`,
+    other:     `Before proceeding, ask yourself honestly: will this loan generate income or solve a genuine emergency? Loans taken for consumption (entertainment, clothes, luxury items) always leave you poorer because you pay interest on top. If this is a true need, proceed with the lender I recommend.`,
+  }[purpose] || '';
+
+  // ── REPAYMENT SCHEDULE ──
+  const w1 = Math.ceil(total * 0.28);
+  const w2 = Math.ceil(total * 0.28);
+  const w3 = Math.ceil(total * 0.25);
+  const w4 = total - w1 - w2 - w3;
+
+  // ── PLAN-SPECIFIC CONTENT ──
+  const planContent = {
+    basic: `BEST LENDER FOR YOU: ${lender}
+How to apply: ${lenderHow}
+
+YOUR LOAN COST:
+• Borrow: KSh ${amount.toLocaleString()}
+• You repay: KSh ${total.toLocaleString()} (includes interest + 20% excise duty)
+• Daily cost: KSh ${daily.toLocaleString()}/day
+
+⚠ KEY WARNING: ${existing === 'yes' ? 'You have existing loans — adding another increases your CRB risk significantly. Clear one loan before taking another.' : risk === 'high' ? `This repayment (KSh ${total.toLocaleString()}) is ${debtRatio}% of your monthly income. This is dangerously high. Consider borrowing KSh ${Math.round(amount * 0.6).toLocaleString()} instead.` : 'Repay at least 3 days before the deadline to build your credit limit automatically.'}`,
+
+    hustler: `📊 FULL LOAN ANALYSIS — ${name.toUpperCase()}
+Prepared by Pesa Advisor Kenya
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+RISK ASSESSMENT: ${riskLabel}
+Debt-to-income ratio: ${debtRatio}% (safe limit is below 30%)
+${debtRatio > 30 ? `⚠ Warning: This loan is ${debtRatio - 30}% above the safe threshold for your income. Consider borrowing KSh ${Math.round(amount * (30 / debtRatio) * 0.9).toLocaleString()} instead.` : '✅ This loan is within a safe range for your income level.'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BEST LENDER: ${lender}
+${lenderHow}
+
+FULL COST BREAKDOWN:
+• Principal: KSh ${amount.toLocaleString()}
+• Interest (${rate}%/month): KSh ${interest.toLocaleString()}
+• Excise duty (20% of interest): KSh ${excise.toLocaleString()}
+• TOTAL TO REPAY: KSh ${total.toLocaleString()}
+• Daily cost: KSh ${daily.toLocaleString()}/day
+
+YOUR WEEK-BY-WEEK REPAYMENT PLAN:
+• Week 1: Set aside KSh ${w1.toLocaleString()} — do not touch it
+• Week 2: Set aside KSh ${w2.toLocaleString()} — total saved: KSh ${(w1+w2).toLocaleString()}
+• Week 3: Set aside KSh ${w3.toLocaleString()} — total saved: KSh ${(w1+w2+w3).toLocaleString()}
+• Week 4: Pay remaining KSh ${w4.toLocaleString()} — DONE ✅
+Tip: Pay on day 27, not day 30. Early repayment = higher limit next time.
+
+ADVICE FOR YOUR SPECIFIC SITUATION (${purpose.toUpperCase()}):
+${purposeAdvice}
+
+CREDIT BUILDING ROADMAP:
+1. Repay this loan 3 days early
+2. Immediately borrow again (same or slightly higher amount) and repay early again
+3. After 3 cycles, your M-Shwari/KCB limit will grow automatically
+4. Within 6 months you can qualify for KCB M-Pesa up to KSh ${Math.min(amount * 3, 500000).toLocaleString()}
+
+${existing === 'yes' ? '🔴 URGENT: You have existing loans. Pay those first. Multiple simultaneous loans are the #1 cause of CRB blacklisting in Kenya. Once you are blacklisted, ALL lenders can see it and you lose access to credit for 5+ years.' : existing === 'fuliza' ? '🟡 NOTE: Clear your Fuliza balance BEFORE borrowing from M-Shwari or KCB. Safaricom checks Fuliza status during approval.' : ''}`,
+
+    biashara: `🏢 BUSINESS STRATEGY REPORT — ${name.toUpperCase()}
+Prepared by Pesa Advisor Kenya — Senior Financial Advisor
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINANCIAL HEALTH ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Risk Level: ${riskLabel}
+Debt-to-income ratio: ${debtRatio}% | Safe limit: 30%
+Monthly income: ~KSh ${incomeNum.toLocaleString()} | Loan repayment: KSh ${total.toLocaleString()}
+${debtRatio > 30 ? `⚠ ADVISORY: This loan exceeds safe borrowing limits for your income. Recommended maximum: KSh ${Math.round(amount * (30 / debtRatio) * 0.85).toLocaleString()}` : '✅ This loan is within financially safe parameters for your income.'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IMMEDIATE ACTION: BEST LENDER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Recommended: ${lender}
+Action: ${lenderHow}
+
+FULL COST BREAKDOWN:
+• Principal: KSh ${amount.toLocaleString()}
+• Interest (${rate}%/month): KSh ${interest.toLocaleString()}
+• Excise duty (20%): KSh ${excise.toLocaleString()}
+• TOTAL REPAYMENT: KSh ${total.toLocaleString()}
+• Daily burden: KSh ${daily.toLocaleString()}/day
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WEEK-BY-WEEK REPAYMENT PLAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Week 1: Save KSh ${w1.toLocaleString()} separately (do not mix with business cash)
+Week 2: Save KSh ${w2.toLocaleString()} → Running total: KSh ${(w1+w2).toLocaleString()}
+Week 3: Save KSh ${w3.toLocaleString()} → Running total: KSh ${(w1+w2+w3).toLocaleString()}
+Week 4: Final payment KSh ${w4.toLocaleString()} → LOAN CLEARED ✅
+Target date: Day 27 (3 days early for credit bonus)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PURPOSE ANALYSIS: ${purpose.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${purposeAdvice}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3-PHASE BUSINESS GROWTH STRATEGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PHASE 1 — NOW (Months 1–3):
+Use ${lender} for working capital. Borrow what you need, repay 3 days early every time. This is your credit-building phase. Do not miss a single deadline.
+
+PHASE 2 — GROWTH (Months 4–6):
+After 3 clean repayments, apply for KCB M-Pesa. This gives you up to KSh ${Math.min(amount * 4, 1000000).toLocaleString()} with 6-month terms — enough capital to buy stock in bulk at better prices and increase margins.
+
+PHASE 3 — SCALE (Month 7+):
+Open an Equity Bank account. After 6 months of consistent M-Pesa loan history, apply for EazzyLoan at 3%/month — the lowest business rate in Kenya. At this stage you can access KSh ${Math.min(amount * 10, 3000000).toLocaleString()} for serious business expansion.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRB PROTECTION RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Never be late — even 1 day late can trigger a CRB flag
+2. Never take a new loan to repay an old one
+3. ${existing === 'yes' ? 'URGENT: Clear existing loans first — you are already at multi-loan risk' : 'Keep Fuliza balance at zero before applying anywhere'}
+4. Set a phone reminder 5 days before repayment date
+5. Always keep KSh ${Math.round(total * 0.3).toLocaleString()} as an emergency repayment buffer
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📱 30-DAY WHATSAPP SUPPORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You have 30 days of direct advisor support. WhatsApp 0114129044 anytime with questions about your loan, repayment, or business financial decisions. Response within 1 hour during business hours (7am–9pm).
+
+Prepared by: Pesa Advisor Kenya | ${new Date().toLocaleDateString('en-KE', {day:'numeric',month:'long',year:'numeric'})}`,
+  };
+
+  // ── SHOW RISK BADGES ──
+  const riskRow = document.getElementById('riskRow');
+  riskRow.style.display = 'flex';
+  riskRow.innerHTML = `
+    <div class="risk-pill ${riskClass}">${riskLabel}</div>
+    <div class="risk-pill" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1)">
+      <i class="ti ti-chart-pie"></i> Debt ratio: ${debtRatio}%
+    </div>
+    <div class="risk-pill" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1)">
+      KSh ${total.toLocaleString()} total repayment
+    </div>
+  `;
+
+  // ── SHOW REPORT ──
+  const reportOutput = document.getElementById('reportOutput');
+  const reportBox    = document.getElementById('reportBox');
+  reportOutput.style.display = 'block';
+  reportBox.classList.add('generating');
+  reportBox.textContent = 'Generating report';
+
+  // Simulate AI typing feel
+  await new Promise(r => setTimeout(r, 900));
+  reportBox.classList.remove('generating');
+  reportBox.textContent = planContent[plan];
+
+  // ── SAVE TO LOG ──
+  const customer = { name, plan, amount, rate, purpose, income, existing, date: todayStr(), earnings: { basic: 10, hustler: 29, biashara: 99 }[plan] };
+  customers.push(customer);
+  totalEarnings += customer.earnings;
+  localStorage.setItem('pa_customers', JSON.stringify(customers));
+  localStorage.setItem('pa_earnings', JSON.stringify(totalEarnings));
+
+  // Update stats
+  document.getElementById('statEarnings').textContent = 'KSh ' + totalEarnings.toLocaleString();
+  document.getElementById('statCustomers').textContent = customers.length;
+  document.getElementById('statToday').textContent = customers.filter(c => c.date === todayStr()).length;
+  renderLog();
+
+  // Scroll to report
+  reportOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── COPY REPORT ──────────────────────────────────────
+function copyReport() {
+  const text = document.getElementById('reportBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyReportBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="ti ti-check"></i> Copied! Now paste on WhatsApp';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<i class="ti ti-copy"></i> Copy Report to Clipboard';
+    }, 3000);
+  });
+}
+
+// ── SEND VIA WHATSAPP ────────────────────────────────
+function sendViaWhatsApp() {
+  let phone = document.getElementById('gPhone').value.trim().replace(/\s/g,'');
+  if (!phone) { alert('Enter the customer\'s WhatsApp number first (field above).'); return; }
+  if (phone.startsWith('0')) phone = '254' + phone.slice(1);
+  if (phone.startsWith('+')) phone = phone.slice(1);
+  const report = document.getElementById('reportBox').textContent;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(report)}`, '_blank');
+}
+</script>
+</body>
+</html>
